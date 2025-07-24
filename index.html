@@ -2,7 +2,7 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>Адууны бүртгэл</title>
+  <title>Малчны бүртгэл</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
@@ -145,14 +145,26 @@
     <button onclick="window.print()">Хэвлэж гаргах</button>
     <button onclick="resetForm()">Арилгах</button>
 
-    <!-- NEW: Display horse count by weight category -->
     <div id="weightStats" style="margin-top: 20px; font-weight: bold;"></div>
-
     <div id="resultArea"></div>
+    <div id="historyArea" style="margin-top: 30px;"></div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZTWwCOzHje5wK-TOC8ZqYxPbeGV_EQRWOawN_1aulQrsshmsOIZ0OZFLG8pQHjGpgCQ/exec";
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const ids = ['date', 'herder', 'account', 'phone', 'horseCount', 'priceOver100', 'priceUnder100'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', validateForm);
+      });
+
+      // 🔄 Өнөөдрийн огноог автоматаар сонгох
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('date');
+      if (dateInput) dateInput.value = today;
+    });
 
     function generateWeightFields() {
       const count = parseInt(document.getElementById('horseCount').value);
@@ -218,6 +230,9 @@
       const receiptId = `REG-${Date.now()}`;
       const qrData = `Малчин: ${herder}, Огноо: ${date}, Дугаар: ${receiptId}`;
 
+      const overWeights = weights.filter(w => w >= 111).join(', ');
+      const underWeights = weights.filter(w => w < 111).join(', ');
+
       return {
         html: `
         <div class="receipt">
@@ -232,9 +247,10 @@
           <p><strong>Дансны дугаар:</strong> ${account}</p>
           <p><strong>Утасны дугаар:</strong> ${phone}</p>
           <p><strong>Адууны тоо:</strong> ${weights.length}</p>
+          <p><strong>Адууны жингүүд:</strong> ${weights.join(', ')} кг</p>
+          <p><strong>110-аас дээш:</strong> ${totalOver.toFixed(2)} кг (${weights.filter(w => w >= 111).length} ширхэг)</p>
+          <p><strong>110-аас доош:</strong> ${totalUnder.toFixed(2)} кг (${weights.filter(w => w < 111).length} ширхэг)</p>
           <p><strong>Нийт жин:</strong> ${totalWeight.toFixed(2)} кг</p>
-          <p><strong>110-аас дээш:</strong> ${totalOver.toFixed(2)} кг * ${priceOver100.toLocaleString()} ₮ = <span class="nowrap">${sumOver.toLocaleString()} ₮</span></p>
-          ${totalUnder > 0 ? `<p><strong>110-аас доош:</strong> ${totalUnder.toFixed(2)} кг * ${priceUnder100.toLocaleString()} ₮ = <span class="nowrap">${sumUnder.toLocaleString()} ₮</span></p>` : ''}
           <p><strong>Нийт дүн:</strong> <span class="nowrap">${totalSum.toLocaleString()} ₮</span></p>
           <br>
           <p><strong>Малчин гарын үсэг: ______________________</strong></p>
@@ -275,9 +291,7 @@
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(receipt1.data)
-      })
-      .then(() => console.log("Амжилттай хадгаллаа"))
-      .catch(err => console.error("Хадгалахад алдаа:", err));
+      });
     }
 
     function resetForm() {
@@ -310,20 +324,6 @@
       document.getElementById('calculateBtn').disabled = !isValid;
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-      const ids = ['date', 'herder', 'account', 'phone', 'horseCount', 'priceOver100', 'priceUnder100'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', validateForm);
-      });
-
-      document.addEventListener('input', function (e) {
-        if (e.target.classList.contains('horseWeight')) {
-          validateForm();
-          updateWeightStats();
-        }
-      });
-    });
   </script>
 </body>
 </html>
