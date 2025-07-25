@@ -250,6 +250,8 @@
           <p><strong>Адууны жингүүд:</strong> ${weights.join(', ')} кг</p>
           <p><strong>110-аас дээш:</strong> ${totalOver.toFixed(2)} кг (${weights.filter(w => w >= 111).length} ширхэг)</p>
           <p><strong>110-аас доош:</strong> ${totalUnder.toFixed(2)} кг (${weights.filter(w => w < 111).length} ширхэг)</p>
+          <p><strong>110-аас дээш үнэ:</strong> ${totalOver.toFixed(2)} кг × ${priceOver100} ₮ = <span class="nowrap">${sumOver.toLocaleString()} ₮</span></p>
+          <p><strong>110-аас доош үнэ:</strong> ${totalUnder.toFixed(2)} кг × ${priceUnder100 || 0} ₮ = <span class="nowrap">${sumUnder.toLocaleString()} ₮</span></p>
           <p><strong>Нийт жин:</strong> ${totalWeight.toFixed(2)} кг</p>
           <p><strong>Нийт дүн:</strong> <span class="nowrap">${totalSum.toLocaleString()} ₮</span></p>
           <br>
