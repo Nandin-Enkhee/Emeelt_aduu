@@ -2,7 +2,7 @@
 <html lang="mn">
 <head>
   <meta charset="UTF-8">
-  <title>Адууны бүртгэл</title>
+  <title>Малчны бүртгэл</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
@@ -130,16 +130,16 @@
 <body>
   <div class="container">
     <h2>Адууны бүртгэлийн систем</h2>
-    <input type="date" id="date" placeholder="Огноо">
-    <input type="text" id="herder" placeholder="Малчны нэр">
-    <input type="text" id="account" placeholder="Дансны дугаар">
-    <input type="text" id="phone" placeholder="Утасны дугаар">
-    <input type="number" id="horseCount" placeholder="Адууны тоо">
+    <input type="date" id="date" placeholder="Огноо" class="tabable-input">
+    <input type="text" id="herder" placeholder="Малчны нэр" class="tabable-input">
+    <input type="text" id="account" placeholder="Дансны дугаар" class="tabable-input">
+    <input type="text" id="phone" placeholder="Утасны дугаар" class="tabable-input">
+    <input type="number" id="horseCount" placeholder="Адууны тоо" class="tabable-input">
     <button onclick="generateWeightFields()">Жингийн талбарууд</button>
     <div id="weightFields"></div>
-    <input type="number" id="priceOver100" placeholder="1 кг-ийн үнэ (110 кг-аас их)">
+    <input type="number" id="priceOver100" placeholder="1 кг-ийн үнэ (110 кг-аас их)" class="tabable-input">
     <div id="under100PriceField" style="display:none;">
-      <input type="number" id="priceUnder100" placeholder="1 кг-ийн үнэ (110 кг-аас бага)">
+      <input type="number" id="priceUnder100" placeholder="1 кг-ийн үнэ (110 кг-аас бага)" class="tabable-input">
     </div>
     <button id="calculateBtn" onclick="generateReceipt()" disabled>Бодох</button>
     <button onclick="window.print()">Хэвлэж гаргах</button>
@@ -153,6 +153,34 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZTWwCOzHje5wK-TOC8ZqYxPbeGV_EQRWOawN_1aulQrsshmsOIZ0OZFLG8pQHjGpgCQ/exec";
 
+    // Бүх input талбарууд дээр Enter дарж дараагийн талбар луу шилжих
+    function setupInputNavigation() {
+      const inputs = document.querySelectorAll('.tabable-input, .horseWeight');
+      
+      inputs.forEach((input, index) => {
+        input.removeEventListener('keydown', handleInputEnter);
+        input.addEventListener('keydown', handleInputEnter);
+      });
+    }
+
+    // Input талбарууд дээрх Enter товчлуурыг боловсруулах функц
+    function handleInputEnter(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        
+        const inputs = Array.from(document.querySelectorAll('.tabable-input, .horseWeight'));
+        const currentIndex = inputs.indexOf(e.target);
+        
+        if (currentIndex < inputs.length - 1) {
+          // Дараагийн input талбар луу шилжих
+          inputs[currentIndex + 1].focus();
+        } else {
+          // Хамгийн сүүлийн input талбар дээр Enter дарвал "Бодох" товчлуур дээр фокусах
+          document.getElementById('calculateBtn').focus();
+        }
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       const ids = ['date', 'herder', 'account', 'phone', 'horseCount', 'priceOver100', 'priceUnder100'];
       ids.forEach(id => {
@@ -164,6 +192,9 @@
       const today = new Date().toISOString().split('T')[0];
       const dateInput = document.getElementById('date');
       if (dateInput) dateInput.value = today;
+      
+      // Анхны input талбаруудад event listener нэмэх
+      setupInputNavigation();
     });
 
     function generateWeightFields() {
@@ -184,6 +215,15 @@
       }
       validateForm();
       updateWeightStats();
+      
+      // Шинээр үүссэн жин оруулах талбаруудад Enter шилжилтийн event нэмэх
+      setupInputNavigation();
+      
+      // Эхний жин оруулах талбар дээр фокусах
+      const firstWeightInput = document.querySelector('.horseWeight');
+      if (firstWeightInput) {
+        firstWeightInput.focus();
+      }
     }
 
     function checkUnder100Weight() {
@@ -191,6 +231,10 @@
         .map(el => parseFloat(el.value)).filter(w => !isNaN(w));
       const hasUnder100 = weights.some(w => w < 111);
       document.getElementById('under100PriceField').style.display = hasUnder100 ? 'block' : 'none';
+      
+      // Шинэчлэгдсэн талбаруудад Enter шилжилтийн event нэмэх
+      setupInputNavigation();
+      
       validateForm();
     }
 
@@ -256,7 +300,7 @@
           <p><strong>Нийт дүн:</strong> <span class="nowrap">${totalSum.toLocaleString()} ₮</span></p>
           <br>
           <p><strong>Малчин гарын үсэг: ______________________</strong></p>
-          <p><strong>Ажилтны нэр:</strong> М.Мөнхтогтох</p>
+          <p><strong>Ажилтны нэр:</strong> М.Даваадолгор</p>
           <div id="qrcode-${receiptId}"></div>
         </div>`,
         qrData,
@@ -304,6 +348,9 @@
       document.getElementById('resultArea').innerHTML = '';
       document.getElementById('calculateBtn').disabled = true;
       document.getElementById('weightStats').innerText = '';
+      
+      // Анхны input талбаруудад event listener нэмэх
+      setupInputNavigation();
     }
 
     function validateForm() {
